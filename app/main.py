@@ -10,4 +10,4 @@ models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
 
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
-app.include_router(paper_router, prefix="/papers", tags=["Auth"])
+app.include_router(paper_router, prefix="/papers", tags=["Papers"])
