@@ -77,3 +77,39 @@ for idx, row in enumerate(rows, start=1):
 
 producer.flush()
 logger.info(f"🎯 Finished sending {valid_count} valid records, skipped {invalid_count} invalid records.")
+
+
+import logging
+from kafka import KafkaConsumer
+import json
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("KafkaConsumerLogger")
+
+# Create Kafka consumer
+consumer = KafkaConsumer(
+    'movie-ratings',
+    bootstrap_servers=['localhost:9092'],  # Change if Kafka broker is remote
+    auto_offset_reset='earliest',          # Read from beginning
+    enable_auto_commit=True,               # Commit offsets automatically
+    group_id="movie-ratings-group",        # Consumer group ID
+    value_deserializer=lambda v: json.loads(v.decode('utf-8'))  # Parse JSON
+)
+
+logger.info("📡 Consumer started. Reading messages from 'movie-ratings'...")
+
+# Poll for messages
+try:
+    for message in consumer:
+        record = message.value  # Already parsed JSON
+        logger.info(f"📄 Offset={message.offset}, Partition={message.partition}, Key={message.key}, Record Title={record.get('title')}")
+        # Example: Access specific fields
+        # print(record["title"], record["vote_average"])
+except KeyboardInterrupt:
+    logger.info("🛑 Consumer stopped manually.")
+finally:
+    consumer.close()
